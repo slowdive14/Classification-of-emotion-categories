@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 
-const EmotionWordsList = () => {
+const EmotionWordsList = ({ csvData }) => {
   const [emotionGroups, setEmotionGroups] = useState({});
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('감정정도M'); // 정렬 기준 상태 추가
@@ -22,10 +22,9 @@ const EmotionWordsList = () => {
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadData = () => {
       try {
-        const response = await window.fs.readFile('감정단어분류_손선주.csv', { encoding: 'utf8' });
-        const result = Papa.parse(response, {
+        const result = Papa.parse(csvData, {
           header: true,
           dynamicTyping: true,
           skipEmptyLines: true
@@ -43,13 +42,15 @@ const EmotionWordsList = () => {
         setSelectedCategory(Object.keys(grouped)[0]);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('Error parsing data:', error);
         setIsLoading(false);
       }
     };
 
-    loadData();
-  }, []);
+    if (csvData) {
+      loadData();
+    }
+  }, [csvData]);
 
   // 정렬된 데이터 가져오기
   const getSortedWords = () => {
