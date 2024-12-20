@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>감정 단어 분류</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const EmotionWordsList = () => {
+            const [emotionGroups, setEmotionGroups] = useState({});
+            const [selectedCategory, setSelectedCategory] = useState('all');
+            const [sortBy, setSortBy] = useState('감정정도M');
+            const [isLoading, setIsLoading] = useState(true);
+
+            const categoryColors = {
+                '기쁨': 'bg-yellow-100',
+                '슬픔': 'bg-blue-100',
+                '분노': 'bg-red-100',
+                '공포': 'bg-purple-100',
+                '혐오': 'bg-green-100',
+                '놀람': 'bg-orange-100',
+                '흥미': 'bg-cyan-100',
+                '지루함': 'bg-gray-100',
+                '통증': 'bg-rose-100',
+                '중성': 'bg-slate-100',
+                '기타': 'bg-zinc-100'
+            };
+
+            useEffect(() => {
+                fetch('감정단어분류_손선주.csv')
+                    .then(response => response.text())
+                    .then(csvData => {
+                        const result = Papa.parse(csvData, {
+                            header: true,
+                            dynamicTyping: true,
+                            skipEmptyLines: true
+                        });
+
+                        const grouped = {};
+                        result.data.forEach(row => {
+                            if (!grouped[row['감정범주']]) {
+                                grouped[row['감정범주']] = [];
+                            }
+                            grouped[row['감정범주']].push(row);
+                        });
+
+                        setEmotionGroups(grouped);
+                        setSelectedCategory(Object.keys(grouped)[0]);
+                        setIsLoading(false);
+                    })
+                    .catch(error => {
+                        console.error('Error loading data:', error);
+                        setIsLoading(false);
+                    });
+            }, []);
+
+            const getSortedWords = () => {
+                if (!emotionGroups[selectedCategory]) return [];
+                return [...emotionGroups[selectedCategory]].sort((a, b) => b[sortBy] - a[sortBy]);
+            };
+
+            const getIntensityColor = (intensity) => {
+                if (intensity >= 8.5) return 'bg-red-500';
+                if (intensity >= 7.5) return 'bg-orange-500';
+                if (intensity >= 6.5) return 'bg-yellow-500';
+                return 'bg-green-500';
+            };
+
+            if (isLoading) {
+                return <div className="p-4">데이터 로딩 중...</div>;
+            }
+
+            return (
+                <div className="p-4 max-w-6xl mx-auto">
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold mb-4">감정 단어 분류</h2>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {Object.keys(emotionGroups).sort().map(category => (
+                                <button
+                                    key={category}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                        selectedCategory === category 
+                                        ? 'bg-blue-600 text-white shadow-lg' 
+                                        : 'bg-gray-100 hover:bg-gray-200'
+                                    }`}
+                                    onClick={() => setSelectedCategory(category)}
+                                >
+                                    {category} ({emotionGroups[category]?.length})
+                                </button>
+                            ))}
+                        </div>
+                        
+                        <div className="mb-4 flex items-center gap-4">
+                            <span className="font-medium">정렬 기준:</span>
+                            <div className="flex gap-2">
+                                <button
+                                    className={`px-3 py-1 rounded ${
+                                        sortBy === '감정정도M' 
+                                        ? 'bg-blue-600 text-white' 
+                                        : 'bg-gray-100 hover:bg-gray-200'
+                                    }`}
+                                    onClick={() => setSortBy('감정정도M')}
+                                >
+                                    감정 정도
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {getSortedWords().map((word, index) => (
+                            <div
+                                key={index}
+                                className={`p-4 rounded-lg ${categoryColors[word['감정범주']] || 'bg-gray-100'}`}
+                            >
+                                <div className="font-bold text-lg mb-2">{word['단어']}</div>
+                                <div className="flex items-center gap-2">
+                                    <span>감정 정도:</span>
+                                    <span className={`px-2 py-1 rounded text-white ${getIntensityColor(word['감정정도M'])}`}>
+                                        {word['감정정도M']}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const { useState, useEffect } = React;
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<EmotionWordsList />);
+    </script>
+</body>
+</html>
