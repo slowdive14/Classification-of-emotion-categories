@@ -14,7 +14,9 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const EmotionWordsList = () => {
+        const { useState, useEffect } = React;
+
+        function EmotionWordsList() {
             const [emotionGroups, setEmotionGroups] = useState({});
             const [selectedCategory, setSelectedCategory] = useState('all');
             const [sortBy, setSortBy] = useState('감정정도M');
@@ -133,9 +135,8 @@
                     </div>
                 </div>
             );
-        };
+        }
 
-        const { useState, useEffect } = React;
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<EmotionWordsList />);
     </script>
