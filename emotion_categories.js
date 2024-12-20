@@ -36,7 +36,7 @@ const EmotionWordsList = ({ csvData }) => {
                 });
 
                 setEmotionGroups(grouped);
-                setSelectedCategory(Object.keys(grouped)[0]);
+                setSelectedCategory('슬픔');
                 setIsLoading(false);
             } catch (error) {
                 console.error('Error parsing data:', error);
