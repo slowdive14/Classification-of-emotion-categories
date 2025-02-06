@@ -55,10 +55,6 @@ const EmotionTooltip = ({ emotion, position }) => {
         const tooltipHeight = 80;
         const margin = 10;
         
-        // 현재 스크롤 위치 고려
-        const scrollX = window.scrollX || window.pageXOffset;
-        const scrollY = window.scrollY || window.pageYOffset;
-        
         // 뷰포트 크기
         const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth);
         const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight);
@@ -79,14 +75,9 @@ const EmotionTooltip = ({ emotion, position }) => {
             x = viewportWidth - actualTooltipWidth - margin;
         }
         
-        // 위쪽 경계 체크
-        if (y < margin + scrollY) {
-            y = margin + scrollY;
-        }
-        
-        // 아래쪽 경계 체크
-        if (y + tooltipHeight + margin > viewportHeight + scrollY) {
-            y = viewportHeight + scrollY - tooltipHeight - margin;
+        // 아래쪽 경계 체크 - 화면 밖으로 나갈 경우 단어 위에 표시
+        if (y + tooltipHeight > viewportHeight + window.scrollY) {
+            y = y - tooltipHeight - 30; // 단어 위로 30px 간격
         }
         
         return { x, y, width: actualTooltipWidth };
@@ -103,7 +94,8 @@ const EmotionTooltip = ({ emotion, position }) => {
             maxWidth: '100vw',
             border: '1px solid #e2e8f0',
             pointerEvents: 'none',
-            wordBreak: 'break-word'
+            wordBreak: 'break-word',
+            transition: 'all 0.2s ease-in-out'
         }
     },
         React.createElement('div', {
@@ -124,25 +116,18 @@ const EmotionCategoryView = () => {
     const [tooltipState, setTooltipState] = React.useState({ emotion: null, position: null });
 
     const handleMouseEnter = (emotion, event) => {
+        const rect = event.target.getBoundingClientRect();
         setTooltipState({
             emotion,
             position: {
-                x: event.clientX + 15,
-                y: event.clientY + 5
+                x: rect.left,
+                y: rect.bottom + window.scrollY + 5 // 단어 아래 5px 간격
             }
         });
     };
 
     const handleMouseMove = (event) => {
-        if (tooltipState.emotion) {
-            setTooltipState(prev => ({
-                ...prev,
-                position: {
-                    x: event.clientX + 15,
-                    y: event.clientY + 5
-                }
-            }));
-        }
+        // 마우스 이동 시에는 위치를 업데이트하지 않음
     };
 
     const handleMouseLeave = () => {
