@@ -59,11 +59,11 @@ const EmotionTooltip = ({ emotion, position }) => {
         const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth);
         const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight);
         
-        let x = pos.x;
-        let y = pos.y;
-        
         // 모바일에서는 툴팁 너비를 화면 크기에 맞게 조정
         const actualTooltipWidth = Math.min(tooltipWidth, viewportWidth - (2 * margin));
+        
+        let x = pos.x;
+        let y = pos.y - window.scrollY; // viewport 기준 y좌표로 변환
         
         // 왼쪽 경계 체크
         if (x < margin) {
@@ -75,9 +75,9 @@ const EmotionTooltip = ({ emotion, position }) => {
             x = viewportWidth - actualTooltipWidth - margin;
         }
         
-        // 아래쪽 경계 체크 - 화면 밖으로 나갈 경우 단어 위에 표시
-        if (y + tooltipHeight > viewportHeight + window.scrollY) {
-            y = y - tooltipHeight - 30; // 단어 위로 30px 간격
+        // 아래쪽 경계 체크 - 화면 밖으로 나갈 경우 위에 표시
+        if (y + tooltipHeight > viewportHeight - margin) {
+            y = y - tooltipHeight - 30; // 위로 표시
         }
         
         return { x, y, width: actualTooltipWidth };
@@ -115,55 +115,35 @@ const EmotionTooltip = ({ emotion, position }) => {
 const EmotionCategoryView = () => {
     const [tooltipState, setTooltipState] = React.useState({ emotion: null, position: null });
 
-    const handleMouseEnter = (emotion, event) => {
-        const rect = event.target.getBoundingClientRect();
-        const scrollY = window.scrollY || window.pageYOffset;
+    const handleMouseEnter = React.useCallback((emotion, event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
         setTooltipState({
             emotion,
             position: {
                 x: rect.left,
-                y: rect.top + scrollY + rect.height + 5 // 단어의 실제 높이를 고려하여 아래에 표시
+                y: rect.bottom + window.scrollY // 절대 위치로 저장
             }
         });
-    };
+    }, []);
 
-    const handleMouseMove = (event) => {
-        // 마우스 이동 시에는 위치를 업데이트하지 않음
-    };
+    const handleTouchStart = React.useCallback((emotion, event) => {
+        event.preventDefault();
+        const rect = event.currentTarget.getBoundingClientRect();
+        setTooltipState({
+            emotion,
+            position: {
+                x: rect.left,
+                y: rect.bottom + window.scrollY // 절대 위치로 저장
+            }
+        });
+    }, []);
 
     const handleMouseLeave = () => {
         setTooltipState({ emotion: null, position: null });
     };
 
-    // 스크롤 이벤트 핸들러 추가
-    React.useEffect(() => {
-        const handleScroll = () => {
-            if (tooltipState.emotion) {
-                const elements = document.querySelectorAll('h4, span');
-                for (const element of elements) {
-                    if (element.textContent.trim() === tooltipState.emotion) {
-                        const rect = element.getBoundingClientRect();
-                        const scrollY = window.scrollY || window.pageYOffset;
-                        setTooltipState(prev => ({
-                            ...prev,
-                            position: {
-                                x: rect.left,
-                                y: rect.top + scrollY + rect.height + 5
-                            }
-                        }));
-                        break;
-                    }
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [tooltipState.emotion]);
-
     return React.createElement('div', { 
-        className: 'p-4 max-w-7xl mx-auto relative',
-        onMouseMove: handleMouseMove
+        className: 'p-4 max-w-7xl mx-auto relative'
     },
         React.createElement(EmotionTooltip, {
             emotion: tooltipState.emotion,
@@ -181,7 +161,6 @@ const EmotionCategoryView = () => {
                     }
                 },
                     React.createElement('div', { className: 'p-6' },
-                        // 범주 이름
                         React.createElement('div', { className: 'flex items-center mb-5' },
                             React.createElement('h3', { 
                                 className: 'text-2xl font-bold text-gray-800',
@@ -189,7 +168,6 @@ const EmotionCategoryView = () => {
                             }, category.name)
                         ),
                         
-                        // 감정 목록
                         React.createElement('div', { className: 'space-y-4' },
                             Object.entries(category.emotions).map(([emotion, subEmotions]) =>
                                 React.createElement('div', { 
@@ -199,6 +177,7 @@ const EmotionCategoryView = () => {
                                     React.createElement('h4', { 
                                         className: 'text-lg font-semibold mb-2 hover:text-blue-600 transition-colors cursor-pointer',
                                         onMouseEnter: (e) => handleMouseEnter(emotion, e),
+                                        onTouchStart: (e) => handleTouchStart(emotion, e),
                                         onMouseLeave: handleMouseLeave
                                     }, emotion),
                                     React.createElement('div', { 
@@ -209,6 +188,7 @@ const EmotionCategoryView = () => {
                                                 key: subEmotion,
                                                 className: 'inline-block px-3 py-1 rounded-full bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-colors cursor-pointer',
                                                 onMouseEnter: (e) => handleMouseEnter(subEmotion.trim(), e),
+                                                onTouchStart: (e) => handleTouchStart(subEmotion.trim(), e),
                                                 onMouseLeave: handleMouseLeave
                                             }, subEmotion.trim())
                                         )
