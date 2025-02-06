@@ -1,6 +1,6 @@
 const EmotionWordsList = ({ csvData }) => {
     const [emotionGroups, setEmotionGroups] = React.useState({});
-    const [selectedCategory, setSelectedCategory] = React.useState('all');
+    const [selectedCategory, setSelectedCategory] = React.useState('슬픔');
     const [sortBy, setSortBy] = React.useState('감정정도M'); 
     const [isLoading, setIsLoading] = React.useState(true);
 
@@ -43,7 +43,6 @@ const EmotionWordsList = ({ csvData }) => {
                 });
 
                 setEmotionGroups(grouped);
-                setSelectedCategory(Object.keys(grouped)[0] || 'all');
                 setIsLoading(false);
             } catch (error) {
                 console.error('데이터 파싱 중 오류:', error);
@@ -77,7 +76,11 @@ const EmotionWordsList = ({ csvData }) => {
             React.createElement('h2', { className: 'text-2xl font-bold mb-4' }, '감정 단어 분류'),
             React.createElement('div', { className: 'flex flex-wrap gap-2 mb-4' },
                 Object.keys(emotionGroups)
-                    .sort((a, b) => emotionGroups[b].length - emotionGroups[a].length)
+                    .sort((a, b) => {
+                        if (a === '슬픔') return -1;
+                        if (b === '슬픔') return 1;
+                        return emotionGroups[b].length - emotionGroups[a].length;
+                    })
                     .map(category =>
                         React.createElement('button', {
                             key: category,

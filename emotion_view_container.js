@@ -51,39 +51,59 @@ const EmotionTooltip = ({ emotion, position }) => {
 
     // 화면 경계를 벗어나지 않도록 위치 조정
     const adjustPosition = (pos) => {
-        const tooltipWidth = 300; // 툴팁의 최대 너비
-        const tooltipHeight = 80; // 툴팁의 예상 높이
-        const margin = 10; // 화면 경계와의 여백
+        const tooltipWidth = 300;
+        const tooltipHeight = 80;
+        const margin = 10;
         
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+        // 현재 스크롤 위치 고려
+        const scrollX = window.scrollX || window.pageXOffset;
+        const scrollY = window.scrollY || window.pageYOffset;
+        
+        // 뷰포트 크기
+        const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth);
+        const viewportHeight = Math.min(window.innerHeight, document.documentElement.clientHeight);
         
         let x = pos.x;
         let y = pos.y;
         
+        // 모바일에서는 툴팁 너비를 화면 크기에 맞게 조정
+        const actualTooltipWidth = Math.min(tooltipWidth, viewportWidth - (2 * margin));
+        
+        // 왼쪽 경계 체크
+        if (x < margin) {
+            x = margin;
+        }
+        
         // 오른쪽 경계 체크
-        if (x + tooltipWidth + margin > viewportWidth) {
-            x = pos.x - tooltipWidth - margin;
+        if (x + actualTooltipWidth + margin > viewportWidth) {
+            x = viewportWidth - actualTooltipWidth - margin;
+        }
+        
+        // 위쪽 경계 체크
+        if (y < margin + scrollY) {
+            y = margin + scrollY;
         }
         
         // 아래쪽 경계 체크
-        if (y + tooltipHeight + margin > viewportHeight) {
-            y = pos.y - tooltipHeight - margin;
+        if (y + tooltipHeight + margin > viewportHeight + scrollY) {
+            y = viewportHeight + scrollY - tooltipHeight - margin;
         }
         
-        return { x, y };
+        return { x, y, width: actualTooltipWidth };
     };
 
-    const adjustedPosition = adjustPosition(position);
+    const { x, y, width } = adjustPosition(position);
 
     return React.createElement('div', {
         className: 'fixed z-50 bg-white shadow-lg rounded-lg p-3',
         style: {
-            left: `${adjustedPosition.x}px`,
-            top: `${adjustedPosition.y}px`,
-            maxWidth: '300px',
+            left: `${x}px`,
+            top: `${y}px`,
+            width: `${width}px`,
+            maxWidth: '100vw',
             border: '1px solid #e2e8f0',
-            pointerEvents: 'none' // 툴팁이 마우스 이벤트를 방해하지 않도록
+            pointerEvents: 'none',
+            wordBreak: 'break-word'
         }
     },
         React.createElement('div', {
