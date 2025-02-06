@@ -1,4 +1,4 @@
-export const emotionDefinitions = {
+window.emotionDefinitions = {
     // 핵심감정 (core)
     '기쁨': '마음에 흐뭇하고 즐거운 감정',
     '신남': '기분이 좋아 들떠있는 상태',

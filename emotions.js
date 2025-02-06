@@ -1,5 +1,5 @@
 // 감정 카테고리 정의
-export const emotionCategories = {
+window.emotionCategories = {
     core: {
         name: '핵심감정',
         color: '#FFD700', // 골드

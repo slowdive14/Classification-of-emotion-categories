@@ -21,6 +21,11 @@ const EmotionWordsList = ({ csvData }) => {
     React.useEffect(() => {
         const loadData = () => {
             try {
+                if (!csvData) {
+                    console.error('CSV 데이터가 없습니다.');
+                    return;
+                }
+
                 const result = Papa.parse(csvData, {
                     header: true,
                     dynamicTyping: true,
@@ -29,6 +34,8 @@ const EmotionWordsList = ({ csvData }) => {
 
                 const grouped = {};
                 result.data.forEach(row => {
+                    if (!row['감정범주']) return;
+                    
                     if (!grouped[row['감정범주']]) {
                         grouped[row['감정범주']] = [];
                     }
@@ -36,10 +43,10 @@ const EmotionWordsList = ({ csvData }) => {
                 });
 
                 setEmotionGroups(grouped);
-                setSelectedCategory('슬픔');
+                setSelectedCategory(Object.keys(grouped)[0] || 'all');
                 setIsLoading(false);
             } catch (error) {
-                console.error('Error parsing data:', error);
+                console.error('데이터 파싱 중 오류:', error);
                 setIsLoading(false);
             }
         };
@@ -129,3 +136,5 @@ const EmotionWordsList = ({ csvData }) => {
         )
     );
 };
+
+window.EmotionWordsList = EmotionWordsList;
