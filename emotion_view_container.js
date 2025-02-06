@@ -117,11 +117,12 @@ const EmotionCategoryView = () => {
 
     const handleMouseEnter = (emotion, event) => {
         const rect = event.target.getBoundingClientRect();
+        const scrollY = window.scrollY || window.pageYOffset;
         setTooltipState({
             emotion,
             position: {
                 x: rect.left,
-                y: rect.bottom + window.scrollY + 5 // 단어 아래 5px 간격
+                y: rect.top + scrollY + rect.height + 5 // 단어의 실제 높이를 고려하여 아래에 표시
             }
         });
     };
@@ -133,6 +134,32 @@ const EmotionCategoryView = () => {
     const handleMouseLeave = () => {
         setTooltipState({ emotion: null, position: null });
     };
+
+    // 스크롤 이벤트 핸들러 추가
+    React.useEffect(() => {
+        const handleScroll = () => {
+            if (tooltipState.emotion) {
+                const elements = document.querySelectorAll('h4, span');
+                for (const element of elements) {
+                    if (element.textContent.trim() === tooltipState.emotion) {
+                        const rect = element.getBoundingClientRect();
+                        const scrollY = window.scrollY || window.pageYOffset;
+                        setTooltipState(prev => ({
+                            ...prev,
+                            position: {
+                                x: rect.left,
+                                y: rect.top + scrollY + rect.height + 5
+                            }
+                        }));
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [tooltipState.emotion]);
 
     return React.createElement('div', { 
         className: 'p-4 max-w-7xl mx-auto relative',
