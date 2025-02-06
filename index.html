@@ -25,7 +25,6 @@
     <script src="emotionDefinitions.js"></script>
     <script src="emotions.js"></script>
     <script src="emotion_categories.js"></script>
-    <script src="emotion_hierarchy.js"></script>
     <script src="emotion_view_container.js"></script>
 
     <!-- 앱 초기화 스크립트 -->
@@ -42,8 +41,7 @@
                 
                 // 전역 객체들이 모두 로드되었는지 확인
                 if (!window.emotionDefinitions || !window.emotionCategories || 
-                    !window.EmotionWordsList || !window.EmotionHierarchyView || 
-                    !window.EmotionViewContainer) {
+                    !window.EmotionWordsList || !window.EmotionViewContainer) {
                     throw new Error('필요한 컴포넌트가 모두 로드되지 않았습니다.');
                 }
 
