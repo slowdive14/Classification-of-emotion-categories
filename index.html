@@ -3,27 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>감정 단어 분류</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    <title>감정 분류 시스템</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="emotion_categories.js"></script>
+    
+    <!-- React -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    
+    <!-- Papa Parse for CSV -->
+    <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
 </head>
 <body>
     <div id="root"></div>
 
+    <!-- 감정 관련 스크립트 -->
+    <script src="emotionDefinitions.js"></script>
+    <script src="emotions.js"></script>
+    <script src="emotion_categories.js"></script>
+    <script src="emotion_hierarchy.js"></script>
+    <script src="emotion_view_container.js"></script>
+
+    <!-- 앱 초기화 스크립트 -->
     <script>
-        fetch('감정단어분류_손선주.csv')
-            .then(response => response.text())
-            .then(csvData => {
-                const root = ReactDOM.createRoot(document.getElementById('root'));
-                root.render(React.createElement(EmotionWordsList, { csvData }));
-            })
-            .catch(error => {
-                console.error('Error loading CSV:', error);
-                document.getElementById('root').innerHTML = '데이터를 불러오는 중 오류가 발생했습니다.';
-            });
+        // CSV 데이터를 로드하고 앱을 초기화하는 함수
+        async function initializeApp() {
+            try {
+                const response = await fetch('emotions.csv');
+                const csvData = await response.text();
+                
+                const container = document.getElementById('root');
+                ReactDOM.render(
+                    React.createElement(window.EmotionViewContainer, { csvData }),
+                    container
+                );
+            } catch (error) {
+                console.error('앱 초기화 중 오류 발생:', error);
+                // 에러 메시지를 화면에 표시
+                const container = document.getElementById('root');
+                container.innerHTML = `<div class="p-4 text-red-600">데이터 로드 중 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+
+        // 페이지 로드 시 앱 초기화
+        window.addEventListener('load', initializeApp);
     </script>
 </body>
 </html>
