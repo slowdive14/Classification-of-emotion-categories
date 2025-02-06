@@ -107,8 +107,8 @@ const EmotionCategoryView = () => {
         setTooltipState({
             emotion,
             position: {
-                x: event.clientX + 15, // 마우스 커서로부터 약간 오른쪽
-                y: event.clientY + 5   // 마우스 커서로부터 약간 아래
+                x: event.clientX + 15,
+                y: event.clientY + 5
             }
         });
     };
@@ -130,7 +130,7 @@ const EmotionCategoryView = () => {
     };
 
     return React.createElement('div', { 
-        className: 'p-4 max-w-6xl mx-auto relative',
+        className: 'p-4 max-w-7xl mx-auto relative',
         onMouseMove: handleMouseMove
     },
         React.createElement(EmotionTooltip, {
@@ -138,42 +138,47 @@ const EmotionCategoryView = () => {
             position: tooltipState.position
         }),
         
-        React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' },
+        React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8' },
             Object.entries(window.emotionCategories).map(([key, category]) =>
                 React.createElement('div', {
                     key,
-                    className: 'bg-white rounded-lg shadow-md overflow-hidden',
-                    style: { borderTop: `4px solid ${category.color}` }
+                    className: 'bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-200 hover:shadow-xl hover:-translate-y-1',
+                    style: { 
+                        borderTop: `6px solid ${category.color}`,
+                        background: `linear-gradient(to bottom, ${category.color}10, white)`
+                    }
                 },
-                    React.createElement('div', { className: 'p-5' },
+                    React.createElement('div', { className: 'p-6' },
                         // 범주 이름
-                        React.createElement('h3', { 
-                            className: 'text-xl font-bold mb-4'
-                        }, category.name),
+                        React.createElement('div', { className: 'flex items-center mb-5' },
+                            React.createElement('h3', { 
+                                className: 'text-2xl font-bold text-gray-800',
+                                style: { color: category.color }
+                            }, category.name)
+                        ),
                         
                         // 감정 목록
-                        Object.entries(category.emotions).map(([emotion, subEmotions]) =>
-                            React.createElement('div', { 
-                                key: emotion,
-                                className: 'mb-3'
-                            },
-                                React.createElement('h4', { 
-                                    className: 'font-medium mb-1 hover:text-blue-600',
-                                    onMouseEnter: (e) => handleMouseEnter(emotion, e),
-                                    onMouseLeave: handleMouseLeave
-                                }, emotion),
+                        React.createElement('div', { className: 'space-y-4' },
+                            Object.entries(category.emotions).map(([emotion, subEmotions]) =>
                                 React.createElement('div', { 
-                                    className: 'text-sm text-gray-600'
+                                    key: emotion,
+                                    className: 'pb-3 border-b border-gray-100 last:border-0'
                                 },
-                                    subEmotions.split(', ').map((subEmotion, index) =>
-                                        React.createElement('span', {
-                                            key: subEmotion,
-                                            className: 'hover:text-blue-600',
-                                            onMouseEnter: (e) => handleMouseEnter(subEmotion.trim(), e),
-                                            onMouseLeave: handleMouseLeave
-                                        },
-                                            subEmotion,
-                                            index < subEmotions.split(', ').length - 1 ? ', ' : ''
+                                    React.createElement('h4', { 
+                                        className: 'text-lg font-semibold mb-2 hover:text-blue-600 transition-colors cursor-pointer',
+                                        onMouseEnter: (e) => handleMouseEnter(emotion, e),
+                                        onMouseLeave: handleMouseLeave
+                                    }, emotion),
+                                    React.createElement('div', { 
+                                        className: 'flex flex-wrap gap-2'
+                                    },
+                                        subEmotions.split(', ').map((subEmotion, index) =>
+                                            React.createElement('span', {
+                                                key: subEmotion,
+                                                className: 'inline-block px-3 py-1 rounded-full bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-colors cursor-pointer',
+                                                onMouseEnter: (e) => handleMouseEnter(subEmotion.trim(), e),
+                                                onMouseLeave: handleMouseLeave
+                                            }, subEmotion.trim())
                                         )
                                     )
                                 )
